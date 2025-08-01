@@ -453,10 +453,13 @@
         function setupLargeCanvas() {
             if (!canvases.large || !contexts.large) return;
             
-            // 작은 캔버스와 동일한 비율로 3배 크기 (180x120 → 540x360)
+            const pad = document.getElementById('largeSignaturePad');
+            if (!pad) return;
+            
             setTimeout(() => {
-                canvases.large.width = 540;
-                canvases.large.height = 360;
+                const rect = pad.getBoundingClientRect();
+                canvases.large.width = rect.width - 4;
+                canvases.large.height = rect.height - 4;
                 setupDrawing(canvases.large, contexts.large);
             }, 100);
         }
@@ -712,21 +715,32 @@
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 
-                canvas.width = 800;
-                canvas.height = 1000;
+                canvas.width = 600;
+                canvas.height = 800;
                 
-                // 배경
+                // 흰색 배경
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
+                // 테두리 그리기
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+                
                 // 제목
                 ctx.fillStyle = '#000000';
-                ctx.font = 'bold 28px Arial';
+                ctx.font = 'bold 24px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('영수증 면제 신청서', 400, 60);
+                ctx.fillText('영수증 면제 신청서', canvas.width/2, 50);
+                
+                // 구분선
+                ctx.beginPath();
+                ctx.moveTo(30, 70);
+                ctx.lineTo(canvas.width - 30, 70);
+                ctx.stroke();
                 
                 // 내용
-                ctx.font = '18px Arial';
+                ctx.font = '16px Arial';
                 ctx.textAlign = 'left';
                 
                 const getData = (id) => {
@@ -756,11 +770,16 @@
                     '신청자: ________________    부서장: ________________'
                 ];
                 
-                let y = 120;
+                let y = 100;
                 lines.forEach(line => {
-                    ctx.fillText(line, 50, y);
-                    y += 30;
+                    ctx.fillText(line, 40, y);
+                    y += 25;
                 });
+                
+                // 하단 안내문
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('※ 본 신청서는 사실에 근거하여 작성하며, 가능한 관련 증빙자료를 첨부해 주시기 바랍니다.', canvas.width/2, canvas.height - 30);
                 
                 // 다운로드
                 const link = document.createElement('a');
