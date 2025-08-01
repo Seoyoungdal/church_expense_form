@@ -487,6 +487,7 @@
 
             function startDraw(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 drawing = true;
                 const pos = getPos(e);
                 ctx.beginPath();
@@ -495,11 +496,15 @@
                 // placeholder 숨기기
                 const placeholder = document.getElementById('largeSignaturePlaceholder');
                 if (placeholder) placeholder.style.display = 'none';
+                
+                // 확대 방지
+                document.body.style.overflow = 'hidden';
             }
 
             function draw(e) {
                 if (!drawing) return;
                 e.preventDefault();
+                e.stopPropagation();
                 const pos = getPos(e);
                 ctx.lineWidth = 2;
                 ctx.lineCap = 'round';
@@ -508,8 +513,13 @@
                 ctx.stroke();
             }
 
-            function stopDraw() {
+            function stopDraw(e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
                 drawing = false;
+                document.body.style.overflow = 'auto';
             }
 
             // 마우스 이벤트
@@ -630,6 +640,10 @@
             }
             if (modal) {
                 modal.style.display = 'block';
+                // 확대 방지
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
                 setupLargeCanvas();
             }
         }
@@ -639,6 +653,10 @@
             const modal = document.getElementById('signatureModal');
             if (modal) modal.style.display = 'none';
             currentSignatureType = null;
+            // 확대 방지 해제
+            document.body.style.overflow = 'auto';
+            document.body.style.position = 'static';
+            document.body.style.width = 'auto';
         }
 
         // 서명 저장
