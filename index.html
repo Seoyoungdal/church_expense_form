@@ -618,11 +618,66 @@
         function openSignatureModal(type) {
             currentSignatureType = type;
             const modal = document.getElementById('signatureModal');
+            const modalContent = document.querySelector('.signature-modal-content');
+            const signaturePad = document.getElementById('largeSignaturePad');
             const title = document.getElementById('signatureTitle');
 
             if (title) {
                 title.textContent = type === 'applicant' ? '신청자 서명' : '부서장 서명';
             }
+
+            // 화면 크기에 따른 동적 조정
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            
+            if (screenWidth <= 400) {
+                // 아이폰 등 작은 화면
+                modalContent.style.width = '95%';
+                modalContent.style.maxWidth = '350px';
+                modalContent.style.margin = '2% auto';
+                modalContent.style.padding = '8px';
+                
+                signaturePad.style.height = '120px';
+                signaturePad.style.margin = '8px auto';
+                
+                // 버튼 크기 조정
+                const buttons = modal.querySelectorAll('.signature-btn');
+                buttons.forEach(btn => {
+                    btn.style.padding = '6px 10px';
+                    btn.style.fontSize = '12px';
+                    btn.style.margin = '2px';
+                });
+                
+                // 제목 크기 조정
+                if (title) {
+                    title.style.fontSize = '14px';
+                    title.style.margin = '5px 0 8px 0';
+                }
+            } else {
+                // 데스크탑이나 큰 화면
+                modalContent.style.width = '500px';
+                modalContent.style.maxWidth = '90%';
+                modalContent.style.margin = '5% auto';
+                modalContent.style.padding = '20px';
+                
+                signaturePad.style.height = '200px';
+                signaturePad.style.margin = '15px auto';
+                
+                // 버튼 원래 크기
+                const buttons = modal.querySelectorAll('.signature-btn');
+                buttons.forEach(btn => {
+                    btn.style.padding = '12px 24px';
+                    btn.style.fontSize = '16px';
+                    btn.style.margin = '5px';
+                });
+                
+                // 제목 원래 크기
+                if (title) {
+                    title.style.fontSize = '18px';
+                    title.style.margin = '0 0 20px 0';
+                }
+            }
+
             if (modal) {
                 modal.style.display = 'block';
                 setupLargeCanvas();
