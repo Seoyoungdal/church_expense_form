@@ -144,7 +144,6 @@
     <label><input type="checkbox" /> 기타</label>
   </div>
 
-  <!-- 서명 영역 좌우 정렬 -->
   <div class="signature-pair">
     <div class="signature-section">
       <label>신청자 이름</label>
@@ -160,7 +159,6 @@
     </div>
   </div>
 
-  <!-- 서명 모달 -->
   <div id="overlay"></div>
   <div id="signatureModal">
     <canvas id="signatureCanvas"></canvas>
@@ -200,6 +198,7 @@
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
     }
 
     function closeSignature() {
@@ -208,16 +207,10 @@
     }
 
     canvas.addEventListener("mousedown", () => drawing = true);
-    canvas.addEventListener("mouseup", () => {
-      drawing = false;
-      ctx.beginPath();
-    });
+    canvas.addEventListener("mouseup", () => { drawing = false; ctx.beginPath(); });
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("touchstart", () => drawing = true);
-    canvas.addEventListener("touchend", () => {
-      drawing = false;
-      ctx.beginPath();
-    });
+    canvas.addEventListener("touchend", () => { drawing = false; ctx.beginPath(); });
     canvas.addEventListener("touchmove", drawTouch);
 
     function draw(e) {
@@ -234,10 +227,7 @@
     function drawTouch(e) {
       const touch = e.touches[0];
       const rect = canvas.getBoundingClientRect();
-      draw({
-        offsetX: touch.clientX - rect.left,
-        offsetY: touch.clientY - rect.top
-      });
+      draw({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
     }
 
     function clearCanvas() {
@@ -246,19 +236,19 @@
 
     function saveSignature() {
       const imgData = canvas.toDataURL("image/png");
-      const targetEl = document.querySelectorAll(".signature-area")
-        [currentTarget === "applicant" ? 0 : 1];
+      const targetEl = document.querySelectorAll(".signature-area")[currentTarget === "applicant" ? 0 : 1];
       targetEl.style.backgroundImage = `url(${imgData})`;
       closeSignature();
     }
 
     function saveAsImage() {
-      html2canvas(document.body).then(function(canvas) {
-        let link = document.createElement("a");
-        link.download = "영수증_면제_신청서.jpg";
-        link.href = canvas.toDataURL();
-        link.click();
-      });
+      setTimeout(() => {
+        html2canvas(document.body).then(function(canvas) {
+          const img = canvas.toDataURL("image/png");
+          const win = window.open();
+          win.document.write('<img src="' + img + '" style="width:100%">');
+        });
+      }, 300);
     }
   </script>
-  <script src="https://
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.
