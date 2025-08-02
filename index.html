@@ -1,49 +1,43 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>서명 및 인쇄 페이지</title>
+  <meta charset="UTF-8" />
+  <title>영수증 면제 신청서</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    #signature-pad {
-      border: 1px solid #ccc;
-      touch-action: none;
-    }
-    .btn-group {
-      margin-top: 15px;
-    }
-    .btn {
-      padding: 8px 16px;
-      margin-right: 10px;
-      border: none;
-      background-color: #0078d7;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    .btn:hover {
-      background-color: #005ea6;
-    }
-    @media print {
-      .btn-group {
-        display: none;
-      }
-    }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 5px; }
+    canvas { border: 1px solid #ccc; margin-top: 10px; touch-action: none; }
+    .btn { margin: 10px 5px 0 0; padding: 8px 16px; background: #0078d7; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .btn:hover { background: #005ea6; }
+    @media print { .btn { display: none; } }
   </style>
 </head>
 <body>
 
-  <h2>서명을 작성하세요 ✍️</h2>
-  <canvas id="signature-pad" width="400" height="200"></canvas>
+  <h2>교회 영수증 면제 신청서 📝</h2>
 
-  <div class="btn-group">
-    <button class="btn" onclick="printPage()">인쇄하기 🖨️</button>
-    <button class="btn" onclick="saveAsImage()">JPG로 저장 🖼️</button>
-    <button class="btn" onclick="clearSignature()">서명 지우기 🔄</button>
-  </div>
+  <form id="application-form">
+    <label>이름</label>
+    <input type="text" name="name" required />
+    <label>교회명</label>
+    <input type="text" name="church" required />
+    <label>연락처</label>
+    <input type="text" name="contact" />
+    <label>주소</label>
+    <textarea name="address"></textarea>
+    <label>신청 사유</label>
+    <textarea name="reason" rows="3" required></textarea>
+
+    <label>전자 서명 (아래에 그려주세요)</label>
+    <canvas id="signature-pad" width="400" height="150"></canvas>
+
+    <div>
+      <button type="button" class="btn" onclick="printPage()">인쇄하기</button>
+      <button type="button" class="btn" onclick="saveImage()">JPG로 저장</button>
+      <button type="button" class="btn" onclick="clearSignature()">서명 지우기</button>
+    </div>
+  </form>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
@@ -51,35 +45,25 @@
     const ctx = canvas.getContext("2d");
     let drawing = false;
 
-    const getPos = (e) => {
+    const getPos = e => {
       const rect = canvas.getBoundingClientRect();
-      const isTouch = e.touches ? true : false;
-      const point = isTouch ? e.touches[0] : e;
-      return {
-        x: point.clientX - rect.left,
-        y: point.clientY - rect.top
-      };
+      const point = e.touches ? e.touches[0] : e;
+      return { x: point.clientX - rect.left, y: point.clientY - rect.top };
     };
 
-    const startDraw = (e) => {
-      e.preventDefault();
-      drawing = true;
+    const startDraw = e => {
+      e.preventDefault(); drawing = true;
       const pos = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
+      ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
     };
 
-    const draw = (e) => {
+    const draw = e => {
       if (!drawing) return;
-      e.preventDefault();
-      const pos = getPos(e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
+      e.preventDefault(); const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y); ctx.stroke();
     };
 
-    const endDraw = () => {
-      drawing = false;
-    };
+    const endDraw = () => { drawing = false; };
 
     canvas.addEventListener("mousedown", startDraw);
     canvas.addEventListener("mousemove", draw);
@@ -96,14 +80,12 @@
       window.print();
     }
 
-    function saveAsImage() {
-      document.querySelector(".btn-group").style.display = "none";
-      html2canvas(canvas).then((canvasImage) => {
+    function saveImage() {
+      html2canvas(document.querySelector("#application-form")).then(canvasImg => {
         const link = document.createElement("a");
-        link.download = "signature.jpg";
-        link.href = canvasImage.toDataURL("image/jpeg");
+        link.download = "church_receipt_exemption.jpg";
+        link.href = canvasImg.toDataURL("image/jpeg");
         link.click();
-        document.querySelector(".btn-group").style.display = "block";
       });
     }
   </script>
