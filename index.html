@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>영수증 면제 신청서</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -11,6 +11,7 @@
       background: #f3f4f6;
       margin: 0;
       padding: 20px;
+      overflow-x: hidden;
     }
     .form-container {
       max-width: 720px;
@@ -71,12 +72,13 @@
       height: 120px;
       width: 100%;
       cursor: crosshair;
+      touch-action: none;
     }
     .buttons {
       text-align: center;
       margin-top: 25px;
     }
-    button {
+    .buttons button {
       background: #3b82f6;
       color: #fff;
       border: none;
@@ -140,7 +142,7 @@
       ※ 본 신청서는 사실에 근거하여 작성하며, 가능한 관련 증빙자료를 첨부해 주시기 바랍니다.
     </div>
 
-    <div class="buttons">
+    <div class="buttons" id="buttons">
       <button onclick="downloadJPG()">📥 JPG로 저장</button>
       <button onclick="clearSignature()">🧽 서명 지우기</button>
     </div>
@@ -166,6 +168,7 @@
         const pos = getPos(e);
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
+        document.body.style.overflow = 'hidden';
       });
 
       canvas.addEventListener('mousemove', e => {
@@ -175,22 +178,35 @@
         ctx.stroke();
       });
 
-      canvas.addEventListener('mouseup', () => drawing = false);
-      canvas.addEventListener('mouseleave', () => drawing = false);
+      canvas.addEventListener('mouseup', () => {
+        drawing = false;
+        document.body.style.overflow = 'auto';
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        drawing = false;
+        document.body.style.overflow = 'auto';
+      });
 
       canvas.addEventListener('touchstart', e => {
         drawing = true;
         const pos = getPos(e);
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
+        document.body.style.overflow = 'hidden';
       });
+
       canvas.addEventListener('touchmove', e => {
         if (!drawing) return;
         const pos = getPos(e);
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
       });
-      canvas.addEventListener('touchend', () => drawing = false);
+
+      canvas.addEventListener('touchend', () => {
+        drawing = false;
+        document.body.style.overflow = 'auto';
+      });
     }
 
     setupSignature('canvas1');
@@ -204,11 +220,18 @@
     }
 
     function downloadJPG() {
+      const buttonsDiv = document.getElementById("buttons");
+      buttonsDiv.style.display = "none";
+
       html2canvas(document.getElementById("captureArea")).then(canvas => {
         const link = document.createElement("a");
         link.download = `영수증면제신청서_${new Date().toISOString().slice(0,10)}.jpg`;
         link.href = canvas.toDataURL("image/jpeg");
         link.click();
+        buttonsDiv.style.display = "block";
+      }).catch(() => {
+        alert("이미지를 저장하는 중 오류가 발생했습니다.");
+        buttonsDiv.style.display = "block";
       });
     }
   </script>
