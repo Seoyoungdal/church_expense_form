@@ -1,84 +1,184 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>서명 입력 v0.97 수정</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>영수증 면제 신청서</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
   <style>
-    #container {
-      margin: 30px;
+    * {
+      box-sizing: border-box;
     }
-    #signatureCanvas {
-      border: 2px solid #333;
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 20px;
+    }
+    .form-wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      color: #1f2937;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 15px;
+      margin-bottom: 30px;
+    }
+    .form-row {
+      margin-bottom: 20px;
+    }
+    label {
       display: block;
-      margin-bottom: 10px;
-      touch-action: none;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #374151;
     }
-    #actions {
-      margin-top: 10px;
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 15px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background-color: #f9fafb;
     }
-    button {
-      margin-right: 10px;
-      padding: 10px 15px;
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .signature-section {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      gap: 20px;
+    }
+    .signature-box {
+      width: 48%;
+      text-align: center;
+    }
+    .signature-pad {
+      border: 1px dashed #9ca3af;
+      height: 120px;
+      margin-top: 8px;
+      border-radius: 6px;
+      background-color: #f9fafb;
+    }
+    .note {
+      margin-top: 25px;
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+      background-color: #f3f4f6;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .actions {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .actions button {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0 8px;
+      transition: background 0.3s;
+    }
+    .actions button:hover {
+      background-color: #2563eb;
+    }
+    .version {
+      font-size: 10px;
+      color: #9ca3af;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="container">
-    <h2>서명 캡처 (v0.97 기준 개선)</h2>
-    <canvas id="signatureCanvas" width="320" height="160"></canvas>
-    <div id="actions">
-      <button id="saveJPG">JPG 저장</button>
-      <button onclick="window.print()">인쇄하기</button>
-      <button id="clear">초기화</button>
+  <div class="form-wrapper">
+    <h1>영수증 면제 신청서</h1>
+    
+    <div class="form-row">
+      <label>신청일</label>
+      <input type="date" />
     </div>
+
+    <div class="form-row">
+      <label>지출일자</label>
+      <input type="date" />
+    </div>
+
+    <div class="form-row">
+      <label>지출금액</label>
+      <input type="text" placeholder="금액을 입력하세요" />
+    </div>
+
+    <div class="form-row">
+      <label>지출내용</label>
+      <input type="text" placeholder="예: 사무용품 구입, 교통비 등" />
+    </div>
+
+    <div class="form-row">
+      <label>상세사유</label>
+      <textarea placeholder="지출에 대한 구체적인 사유를 입력하세요"></textarea>
+    </div>
+
+    <div class="form-row">
+      <label>영수증 미첨부 사유</label>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><input type="checkbox" /> <span>영수증 분실</span></div>
+        <div class="checkbox-item"><input type="checkbox" /> <span>영수증 미발행</span></div>
+        <div class="checkbox-item"><input type="checkbox" /> <span>경조사비</span></div>
+        <div class="checkbox-item"><input type="checkbox" /> <span>교통비</span></div>
+        <div class="checkbox-item"><input type="checkbox" /> <span>기타</span></div>
+      </div>
+    </div>
+
+    <div class="signature-section">
+      <div class="signature-box">
+        <label>신청자 서명</label>
+        <div class="signature-pad"></div>
+      </div>
+      <div class="signature-box">
+        <label>부서장 승인 서명</label>
+        <div class="signature-pad"></div>
+      </div>
+    </div>
+
+    <div class="note">
+      ※ 본 신청서는 사실에 근거하여 작성하며, 가능한 관련 증빙자료를 첨부해 주시기 바랍니다.
+    </div>
+
+    <div class="actions">
+      <button>JPG로 저장</button>
+      <button>PDF로 저장</button>
+      <button>인쇄하기</button>
+    </div>
+
+    <div class="version">v4.0</div>
   </div>
-
-  <script>
-    const canvas = document.getElementById("signatureCanvas");
-    const ctx = canvas.getContext("2d");
-    let drawing = false;
-
-    function getPos(evt) {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = evt.clientX || evt.touches[0].clientX;
-      const clientY = evt.clientY || evt.touches[0].clientY;
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-      };
-    }
-
-    canvas.addEventListener("pointerdown", e => {
-      drawing = true;
-      const pos = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-    });
-
-    canvas.addEventListener("pointermove", e => {
-      if (!drawing) return;
-      const pos = getPos(e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    });
-
-    canvas.addEventListener("pointerup", () => drawing = false);
-    canvas.addEventListener("pointerleave", () => drawing = false);
-
-    document.getElementById("clear").addEventListener("click", () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
-
-    document.getElementById("saveJPG").addEventListener("click", () => {
-      html2canvas(canvas).then(c => {
-        const link = document.createElement("a");
-        link.download = "signature.jpg";
-        link.href = c.toDataURL("image/jpeg");
-        link.click();
-      });
-    });
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </body>
 </html>
