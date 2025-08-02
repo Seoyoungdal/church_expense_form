@@ -1,1026 +1,205 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>영수증 면제 신청서</title>
-    <style>
-        body {
-            font-family: 'Malgun Gothic', sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-            background-color: #f8f9fa;
-        }
-        .form-container {
-            background-color: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #2c3e50;
-            padding-bottom: 15px;
-        }
-        .header h1 {
-            color: #2c3e50;
-            margin: 0;
-            font-size: 22px;
-            font-weight: bold;
-        }
-        .form-row {
-            display: flex;
-            margin-bottom: 15px;
-            align-items: center;
-        }
-        .form-row.full-width {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .label {
-            font-weight: bold;
-            min-width: 100px;
-            color: #34495e;
-            margin-right: 10px;
-        }
-        .input-field {
-            flex: 1;
-            border: none;
-            border-bottom: 1px solid #bdc3c7;
-            padding: 8px 5px;
-            font-size: 14px;
-            background-color: transparent;
-        }
-        .input-field:focus {
-            outline: none;
-            border-bottom: 2px solid #3498db;
-        }
-        .amount-input {
-            flex: 1;
-            border: none;
-            border-bottom: 1px solid #bdc3c7;
-            padding: 8px 5px;
-            font-size: 14px;
-            background-color: transparent;
-            cursor: pointer;
-            text-align: right;
-        }
-        .amount-input:focus {
-            outline: none;
-            border-bottom: 2px solid #3498db;
-        }
-        .large-input {
-            min-height: 60px;
-            border: 1px solid #bdc3c7;
-            padding: 10px;
-            resize: vertical;
-            border-radius: 4px;
-        }
-        .checkbox-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .section {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        .signature-section {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-around;
-        }
-        .signature-box {
-            text-align: center;
-            width: 180px;
-        }
-        .signature-pad {
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
-            background-color: #fff;
-            cursor: pointer;
-            height: 120px;
-            margin-bottom: 8px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .signature-pad:hover {
-            border-color: #3498db;
-            background-color: #f8f9fa;
-        }
-        .signature-placeholder {
-            color: #bdc3c7;
-            font-size: 12px;
-            pointer-events: none;
-        }
-        .signature-pad canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .clear-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 10px;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-        .save-options {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .save-options button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        .save-options button:hover {
-            background: #2980b9;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 300px;
-            text-align: center;
-        }
-        .signature-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
-        }
-        .signature-modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 600px;
-            max-width: 90%;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-        }
-        .signature-modal h3 {
-            margin: 0 0 20px 0;
-            color: #2c3e50;
-        }
-        .large-signature-pad {
-            border: 2px solid #3498db;
-            border-radius: 8px;
-            background-color: #fff;
-            cursor: crosshair;
-            position: relative;
-            margin: 20px auto;
-            width: 540px;
-            height: 360px;
-        }
-        .large-signature-pad canvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 6px;
-        }
-        .large-signature-placeholder {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #bdc3c7;
-            font-size: 18px;
-            pointer-events: none;
-        }
-        .signature-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .signature-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .signature-btn.save {
-            background: #27ae60;
-            color: white;
-        }
-        .signature-btn.clear {
-            background: #e74c3c;
-            color: white;
-        }
-        .signature-btn.cancel {
-            background: #95a5a6;
-            color: white;
-        }
-        .modal input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        .modal button {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .modal .confirm-btn {
-            background: #3498db;
-            color: white;
-        }
-        .modal .cancel-btn {
-            background: #95a5a6;
-            color: white;
-        }
-        @media print {
-            body {
-                background-color: white;
-                margin: 0;
-                padding: 10px;
-            }
-            .form-container {
-                box-shadow: none;
-                padding: 20px;
-            }
-            .save-options, .clear-btn {
-                display: none !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>영수증 면제 신청서</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      font-family: 'Malgun Gothic', sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #34495e;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+    }
+    .signature-area {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .signature-box {
+      flex: 1;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+      height: 120px;
+      touch-action: none;
+    }
+    .btn {
+      background: #3498db;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      display: block;
+      margin: 30px auto 0;
+    }
+    .btn:hover {
+      background: #2980b9;
+    }
+  </style>
 </head>
 <body>
-    <div class="form-container" id="formContainer">
-        <div class="header">
-            <h1>영수증 면제 신청서</h1>
-        </div>
+  <div class="container" id="receiptForm">
+    <h1>영수증 면제 신청서</h1>
 
-        <div class="form-row">
-            <span class="label">신청일:</span>
-            <input type="date" class="input-field" id="applicationDate">
-        </div>
-
-        <div class="section">
-            <div class="form-row">
-                <span class="label">지출일자:</span>
-                <input type="date" class="input-field" id="expenseDate">
-            </div>
-
-            <div class="form-row">
-                <span class="label">지출금액:</span>
-                <input type="text" class="amount-input" id="amountInput" placeholder="금액 입력" readonly>
-                <span style="margin-left: 10px;">원</span>
-            </div>
-
-            <div class="form-row">
-                <span class="label">지출내용:</span>
-                <input type="text" class="input-field" id="expenseContent" placeholder="예: 사무용품 구입, 교통비 등">
-            </div>
-
-            <div class="form-row full-width" style="margin-top: 15px;">
-                <span class="label" style="margin-bottom: 8px;">상세사유:</span>
-                <textarea class="input-field large-input" id="detailReason" placeholder="지출의 구체적인 사유를 기재해 주세요."></textarea>
-            </div>
-        </div>
-
-        <div class="section">
-            <div style="font-weight: bold; margin-bottom: 10px; color: #34495e;">영수증 미첨부 사유</div>
-            <div class="checkbox-group">
-                <div class="checkbox-item">
-                    <input type="checkbox" id="reason1">
-                    <label for="reason1">영수증 분실</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="reason2">
-                    <label for="reason2">영수증 미발행</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="reason3">
-                    <label for="reason3">경조사비</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="reason4">
-                    <label for="reason4">교통비</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="reason5">
-                    <label for="reason5">기타</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="signature-section">
-            <div class="signature-box">
-                <div class="signature-pad" id="applicantSignature">
-                    <canvas id="applicantCanvas" style="display: none;"></canvas>
-                    <div class="signature-placeholder" id="applicantPlaceholder">서명하려면 클릭</div>
-                </div>
-                <button class="clear-btn" id="clearApplicant">지우기</button><br>
-                <strong>신청자</strong>
-            </div>
-            
-            <div class="signature-box">
-                <div class="signature-pad" id="managerSignature">
-                    <canvas id="managerCanvas" style="display: none;"></canvas>
-                    <div class="signature-placeholder" id="managerPlaceholder">서명하려면 클릭</div>
-                </div>
-                <button class="clear-btn" id="clearManager">지우기</button><br>
-                <strong>부서장 승인</strong>
-            </div>
-        </div>
-
-        <div style="margin-top: 25px; padding: 10px; background-color: #f1f3f4; border-radius: 4px; font-size: 12px; color: #6c757d; text-align: center;">
-            ※ 본 신청서는 사실에 근거하여 작성하며, 가능한 관련 증빙자료를 첨부해 주시기 바랍니다.
-        </div>
-
-        <div class="save-options">
-            <button id="saveJPG">JPG로 저장</button>
-            <button id="savePDF">PDF로 저장</button>
-            <button id="printBtn">인쇄하기</button>
-        </div>
-
-        <!-- 버전 정보 -->
-        <div style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #95a5a6; background: rgba(255,255,255,0.8); padding: 2px 6px; border-radius: 3px;">
-            v3.6
-        </div>
+    <div class="form-group">
+      <label for="applicationDate">신청일</label>
+      <input type="date" id="applicationDate" />
     </div>
 
-    <!-- 서명 팝업 모달 -->
-    <div id="signatureModal" class="signature-modal">
-        <div class="signature-modal-content">
-            <h3 id="signatureTitle">서명해 주세요</h3>
-            <div class="large-signature-pad" id="largeSignaturePad">
-                <canvas id="largeSignatureCanvas"></canvas>
-                <div class="large-signature-placeholder" id="largeSignaturePlaceholder">여기에 서명해 주세요</div>
-            </div>
-            <div class="signature-buttons">
-                <button class="signature-btn save" id="saveSignature">저장</button>
-                <button class="signature-btn clear" id="clearLargeSignature">지우기</button>
-                <button class="signature-btn cancel" id="cancelSignature">취소</button>
-            </div>
-        </div>
+    <div class="form-group">
+      <label for="expenseDate">지출일자</label>
+      <input type="date" id="expenseDate" />
     </div>
 
-    <!-- 금액 입력 모달 -->
-    <div id="amountModal" class="modal">
-        <div class="modal-content">
-            <h3>금액 입력</h3>
-            <input type="number" id="amountNumber" placeholder="숫자만 입력">
-            <div>
-                <button class="confirm-btn" id="confirmAmount">확인</button>
-                <button class="cancel-btn" id="cancelAmount">취소</button>
-            </div>
-        </div>
+    <div class="form-group">
+      <label for="amountInput">지출금액 (원)</label>
+      <input type="text" id="amountInput" placeholder="숫자만 입력" readonly />
     </div>
 
-    <script>
-        // 전역 변수
-        let canvases = {};
-        let contexts = {};
-        let currentSignatureType = null;
-        let isDrawing = false;
+    <div class="form-group">
+      <label for="expenseContent">지출내용</label>
+      <input type="text" id="expenseContent" />
+    </div>
 
-        // 앱 초기화
-        function initApp() {
-            setupCanvases();
-            setupEvents();
-            setToday();
-        }
+    <div class="form-group">
+      <label for="detailReason">상세사유</label>
+      <textarea id="detailReason" rows="4"></textarea>
+    </div>
 
-        // 캔버스 설정
-        function setupCanvases() {
-            // 작은 캔버스들
-            canvases.applicant = document.getElementById('applicantCanvas');
-            canvases.manager = document.getElementById('managerCanvas');
-            canvases.large = document.getElementById('largeSignatureCanvas');
+    <div class="signature-area">
+      <div class="signature-box">
+        <label for="staffName">담당자 이름</label>
+        <input type="text" id="staffName" />
+        <label>담당자 서명</label>
+        <canvas id="staffCanvas"></canvas>
+      </div>
+      <div class="signature-box">
+        <label for="managerName">책임자 이름</label>
+        <input type="text" id="managerName" />
+        <label>책임자 서명</label>
+        <canvas id="managerCanvas"></canvas>
+      </div>
+    </div>
 
-            // 컨텍스트 생성
-            contexts.applicant = canvases.applicant?.getContext('2d');
-            contexts.manager = canvases.manager?.getContext('2d');
-            contexts.large = canvases.large?.getContext('2d');
+    <button class="btn" id="saveJPG">JPG로 저장하기</button>
+  </div>
 
-            // 캔버스 크기 설정 (3:2 비율로 통일)
-            if (canvases.applicant && contexts.applicant) {
-                canvases.applicant.width = 180;
-                canvases.applicant.height = 120; // 3:2 비율
-            }
-            if (canvases.manager && contexts.manager) {
-                canvases.manager.width = 180;
-                canvases.manager.height = 120; // 3:2 비율
-            }
+  <script>
+    // 날짜 자동 입력
+    document.getElementById("applicationDate").value = new Date().toISOString().slice(0, 10);
 
-            // 큰 캔버스 설정 (나중에 모달 열릴 때)
-            setupLargeCanvas();
-        }
+    // 금액 입력 처리
+    const amountInput = document.getElementById("amountInput");
+    amountInput.addEventListener("click", () => {
+      const val = prompt("금액을 숫자로 입력하세요");
+      if (val) {
+        const cleanVal = val.replace(/\D/g, "");
+        amountInput.value = parseInt(cleanVal).toLocaleString();
+      }
+    });
 
-        // 큰 캔버스 설정
-        function setupLargeCanvas() {
-            if (!canvases.large || !contexts.large) return;
-            
-            const pad = document.getElementById('largeSignaturePad');
-            if (!pad) return;
-            
-            setTimeout(() => {
-                const rect = pad.getBoundingClientRect();
-                canvases.large.width = rect.width - 4;
-                canvases.large.height = rect.height - 4;
-                setupDrawing(canvases.large, contexts.large);
-            }, 100);
-        }
+    // 서명 기능 설정
+    function setupCanvas(id) {
+      const canvas = document.getElementById(id);
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
 
-        // 그리기 이벤트 설정
-        function setupDrawing(canvas, ctx) {
-            if (!canvas || !ctx) return;
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: (e.clientX || e.touches[0].clientX) - rect.left,
+          y: (e.clientY || e.touches[0].clientY) - rect.top
+        };
+      }
 
-            let drawing = false;
+      canvas.addEventListener("mousedown", e => {
+        drawing = true;
+        ctx.beginPath();
+        const pos = getPos(e);
+        ctx.moveTo(pos.x, pos.y);
+      });
 
-            function getPos(e) {
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                return {
-                    x: clientX - rect.left,
-                    y: clientY - rect.top
-                };
-            }
+      canvas.addEventListener("mousemove", e => {
+        if (!drawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      });
 
-            function startDraw(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                drawing = true;
-                const pos = getPos(e);
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                
-                // placeholder 숨기기
-                const placeholder = document.getElementById('largeSignaturePlaceholder');
-                if (placeholder) placeholder.style.display = 'none';
-                
-                // 확대 방지
-                document.body.style.overflow = 'hidden';
-            }
+      canvas.addEventListener("mouseup", () => drawing = false);
+      canvas.addEventListener("mouseout", () => drawing = false);
 
-            function draw(e) {
-                if (!drawing) return;
-                e.preventDefault();
-                e.stopPropagation();
-                const pos = getPos(e);
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-                ctx.strokeStyle = '#000';
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
-            }
+      canvas.addEventListener("touchstart", e => {
+        drawing = true;
+        ctx.beginPath();
+        const pos = getPos(e);
+        ctx.moveTo(pos.x, pos.y);
+      }, { passive: false });
 
-            function stopDraw(e) {
-                if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                drawing = false;
-                document.body.style.overflow = 'auto';
-            }
+      canvas.addEventListener("touchmove", e => {
+        if (!drawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      }, { passive: false });
 
-            // 마우스 이벤트
-            canvas.addEventListener('mousedown', startDraw);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDraw);
+      canvas.addEventListener("touchend", () => drawing = false);
+    }
 
-            // 터치 이벤트
-            canvas.addEventListener('touchstart', startDraw);
-            canvas.addEventListener('touchmove', draw);
-            canvas.addEventListener('touchend', stopDraw);
-        }
+    setupCanvas("staffCanvas");
+    setupCanvas("managerCanvas");
 
-        // 이벤트 설정
-        function setupEvents() {
-            // 서명 패드 클릭
-            const applicantPad = document.getElementById('applicantSignature');
-            const managerPad = document.getElementById('managerSignature');
-
-            if (applicantPad) {
-                applicantPad.addEventListener('click', () => openSignatureModal('applicant'));
-            }
-            if (managerPad) {
-                managerPad.addEventListener('click', () => openSignatureModal('manager'));
-            }
-
-            // 서명 모달 버튼들
-            const saveBtn = document.getElementById('saveSignature');
-            const clearBtn = document.getElementById('clearLargeSignature');
-            const cancelBtn = document.getElementById('cancelSignature');
-
-            if (saveBtn) saveBtn.addEventListener('click', saveSignature);
-            if (clearBtn) clearBtn.addEventListener('click', clearLargeSignature);
-            if (cancelBtn) cancelBtn.addEventListener('click', closeSignatureModal);
-
-            // 서명 지우기 버튼들
-            const clearApplicant = document.getElementById('clearApplicant');
-            const clearManager = document.getElementById('clearManager');
-
-            if (clearApplicant) {
-                clearApplicant.addEventListener('click', () => clearSmallSignature('applicant'));
-            }
-            if (clearManager) {
-                clearManager.addEventListener('click', () => clearSmallSignature('manager'));
-            }
-
-            // 금액 입력
-            const amountInput = document.getElementById('amountInput');
-            if (amountInput) {
-                amountInput.addEventListener('click', () => {
-                    const modal = document.getElementById('amountModal');
-                    if (modal) {
-                        modal.style.display = 'block';
-                        const numberInput = document.getElementById('amountNumber');
-                        if (numberInput) numberInput.focus();
-                    }
-                });
-            }
-
-            // 금액 확인/취소
-            const confirmAmount = document.getElementById('confirmAmount');
-            const cancelAmount = document.getElementById('cancelAmount');
-
-            if (confirmAmount) {
-                confirmAmount.addEventListener('click', () => {
-                    const numberInput = document.getElementById('amountNumber');
-                    const amountInput = document.getElementById('amountInput');
-                    if (numberInput && amountInput && numberInput.value) {
-                        const formatted = parseInt(numberInput.value).toLocaleString();
-                        amountInput.value = formatted;
-                    }
-                    closeAmountModal();
-                });
-            }
-
-            if (cancelAmount) {
-                cancelAmount.addEventListener('click', closeAmountModal);
-            }
-
-            // 엔터키
-            const amountNumber = document.getElementById('amountNumber');
-            if (amountNumber) {
-                amountNumber.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        const confirmBtn = document.getElementById('confirmAmount');
-                        if (confirmBtn) confirmBtn.click();
-                    }
-                });
-            }
-
-            // 저장 버튼들
-            const saveJPG = document.getElementById('saveJPG');
-            const savePDF = document.getElementById('savePDF');
-            const printBtn = document.getElementById('printBtn');
-
-            if (saveJPG) saveJPG.addEventListener('click', downloadJPG);
-            if (savePDF) savePDF.addEventListener('click', downloadPDF);
-            if (printBtn) printBtn.addEventListener('click', printForm);
-
-            // 모달 외부 클릭
-            window.addEventListener('click', (e) => {
-                const amountModal = document.getElementById('amountModal');
-                const signatureModal = document.getElementById('signatureModal');
-                
-                if (e.target === amountModal) closeAmountModal();
-                if (e.target === signatureModal) closeSignatureModal();
-            });
-        }
-
-        // 서명 모달 열기
-        function openSignatureModal(type) {
-            currentSignatureType = type;
-            const modal = document.getElementById('signatureModal');
-            const title = document.getElementById('signatureTitle');
-
-            if (title) {
-                title.textContent = type === 'applicant' ? '신청자 서명' : '부서장 서명';
-            }
-            if (modal) {
-                modal.style.display = 'block';
-                // 확대 방지
-                document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.width = '100%';
-                setupLargeCanvas();
-            }
-        }
-
-        // 서명 모달 닫기
-        function closeSignatureModal() {
-            const modal = document.getElementById('signatureModal');
-            if (modal) modal.style.display = 'none';
-            currentSignatureType = null;
-            // 확대 방지 해제
-            document.body.style.overflow = 'auto';
-            document.body.style.position = 'static';
-            document.body.style.width = 'auto';
-        }
-
-        // 서명 저장
-        function saveSignature() {
-            if (!currentSignatureType || !canvases.large || !contexts.large) return;
-
-            const targetCanvas = canvases[currentSignatureType];
-            const targetCtx = contexts[currentSignatureType];
-            
-            if (!targetCanvas || !targetCtx) return;
-
-            // 작은 캔버스에 복사
-            targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
-            targetCtx.drawImage(canvases.large, 0, 0, canvases.large.width, canvases.large.height,
-                               0, 0, targetCanvas.width, targetCanvas.height);
-
-            // 캔버스 보이기, placeholder 숨기기
-            targetCanvas.style.display = 'block';
-            const placeholder = document.getElementById(currentSignatureType + 'Placeholder');
-            if (placeholder) placeholder.style.display = 'none';
-
-            closeSignatureModal();
-        }
-
-        // 큰 서명 지우기
-        function clearLargeSignature() {
-            if (!canvases.large || !contexts.large) return;
-            contexts.large.clearRect(0, 0, canvases.large.width, canvases.large.height);
-            const placeholder = document.getElementById('largeSignaturePlaceholder');
-            if (placeholder) placeholder.style.display = 'block';
-        }
-
-        // 작은 서명 지우기
-        function clearSmallSignature(type) {
-            const canvas = canvases[type];
-            const ctx = contexts[type];
-            
-            if (!canvas || !ctx) return;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.style.display = 'none';
-            
-            const placeholder = document.getElementById(type + 'Placeholder');
-            if (placeholder) placeholder.style.display = 'block';
-        }
-
-        // 금액 모달 닫기
-        function closeAmountModal() {
-            const modal = document.getElementById('amountModal');
-            if (modal) modal.style.display = 'none';
-        }
-
-        // 오늘 날짜 설정
-        function setToday() {
-            const today = new Date().toISOString().slice(0, 10);
-            const dateInput = document.getElementById('applicationDate');
-            if (dateInput) dateInput.value = today;
-        }
-
-        // 버튼 숨기기/보이기
-        function hideButtons() {
-            const elements = document.querySelectorAll('.clear-btn, .save-options');
-            elements.forEach(el => el.style.display = 'none');
-        }
-
-        function showButtons() {
-            const clearBtns = document.querySelectorAll('.clear-btn');
-            const saveOptions = document.querySelector('.save-options');
-            
-            clearBtns.forEach(btn => btn.style.display = 'inline-block');
-            if (saveOptions) saveOptions.style.display = 'block';
-        }
-
-        // JPG 다운로드 (화면과 동일한 레이아웃)
-        function downloadJPG() {
-            hideButtons();
-            
-            try {
-                // 실제 폼 컨테이너를 캔버스로 변환
-                const formContainer = document.getElementById('formContainer');
-                const rect = formContainer.getBoundingClientRect();
-                
-                // 10cm 폭 기준으로 스케일 계산 (378px = 10cm at 96DPI)
-                const targetWidth = 378;
-                const scale = targetWidth / rect.width;
-                const targetHeight = rect.height * scale;
-                
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                canvas.width = targetWidth;
-                canvas.height = targetHeight;
-                
-                // 배경색
-                ctx.fillStyle = '#f8f9fa';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // 폼 컨테이너 배경
-                const containerPadding = 25 * scale;
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(containerPadding, containerPadding, canvas.width - (containerPadding * 2), canvas.height - (containerPadding * 2));
-                
-                // 그림자 효과
-                ctx.shadowColor = 'rgba(0,0,0,0.1)';
-                ctx.shadowBlur = 10 * scale;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 2 * scale;
-                ctx.fillRect(containerPadding, containerPadding, canvas.width - (containerPadding * 2), canvas.height - (containerPadding * 2));
-                ctx.shadowColor = 'transparent';
-                
-                // 헤더 영역
-                const headerY = containerPadding + (25 * scale);
-                ctx.fillStyle = '#2c3e50';
-                ctx.fillRect(containerPadding, headerY, canvas.width - (containerPadding * 2), 2 * scale);
-                
-                // 제목
-                ctx.fillStyle = '#2c3e50';
-                ctx.font = `bold ${22 * scale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('영수증 면제 신청서', canvas.width / 2, headerY - (5 * scale));
-                
-                // 입력 필드들
-                let y = headerY + (30 * scale);
-                const leftMargin = containerPadding + (20 * scale);
-                const labelWidth = 100 * scale;
-                const fontSize = 14 * scale;
-                
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.textAlign = 'left';
-                ctx.fillStyle = '#34495e';
-                
-                // 신청일
-                ctx.fillText('신청일:', leftMargin, y);
-                ctx.fillStyle = '#3498db';
-                ctx.font = `${fontSize}px Arial`;
-                const applicationDate = document.getElementById('applicationDate').value;
-                if (applicationDate) {
-                    const formattedDate = new Date(applicationDate).toLocaleDateString('ko-KR');
-                    ctx.fillText(formattedDate, leftMargin + labelWidth, y);
-                }
-                
-                // 하단 선 그리기
-                ctx.strokeStyle = '#bdc3c7';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
-                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
-                ctx.stroke();
-                
-                y += 35 * scale;
-                
-                // 지출일자
-                ctx.fillStyle = '#34495e';
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillText('지출일자:', leftMargin, y);
-                ctx.fillStyle = '#3498db';
-                ctx.font = `${fontSize}px Arial`;
-                const expenseDate = document.getElementById('expenseDate').value;
-                if (expenseDate) {
-                    const formattedExpenseDate = new Date(expenseDate).toLocaleDateString('ko-KR');
-                    ctx.fillText(formattedExpenseDate, leftMargin + labelWidth, y);
-                }
-                
-                // 하단 선
-                ctx.beginPath();
-                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
-                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
-                ctx.stroke();
-                
-                y += 35 * scale;
-                
-                // 지출금액
-                ctx.fillStyle = '#34495e';
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillText('지출금액:', leftMargin, y);
-                ctx.fillStyle = '#000000';
-                ctx.font = `${fontSize}px Arial`;
-                ctx.textAlign = 'right';
-                const amount = document.getElementById('amountInput').value;
-                ctx.fillText(amount, canvas.width - (containerPadding + 50 * scale), y);
-                ctx.textAlign = 'left';
-                ctx.fillText('원', canvas.width - (containerPadding + 40 * scale), y);
-                
-                // 하단 선
-                ctx.beginPath();
-                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
-                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
-                ctx.stroke();
-                
-                y += 35 * scale;
-                
-                // 지출내용
-                ctx.fillStyle = '#34495e';
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.textAlign = 'left';
-                ctx.fillText('지출내용:', leftMargin, y);
-                ctx.fillStyle = '#000000';
-                ctx.font = `${fontSize}px Arial`;
-                const content = document.getElementById('expenseContent').value;
-                ctx.fillText(content, leftMargin + labelWidth, y);
-                
-                // 하단 선
-                ctx.beginPath();
-                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
-                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
-                ctx.stroke();
-                
-                y += 35 * scale;
-                
-                // 상세사유
-                ctx.fillStyle = '#34495e';
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillText('상세사유:', leftMargin, y);
-                
-                y += 20 * scale;
-                
-                // 상세사유 박스
-                const reasonBoxX = leftMargin;
-                const reasonBoxY = y;
-                const reasonBoxWidth = canvas.width - (containerPadding + 40 * scale);
-                const reasonBoxHeight = 60 * scale;
-                
-                ctx.strokeStyle = '#bdc3c7';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(reasonBoxX, reasonBoxY, reasonBoxWidth, reasonBoxHeight);
-                ctx.fillStyle = '#f8f9fa';
-                ctx.fillRect(reasonBoxX, reasonBoxY, reasonBoxWidth, reasonBoxHeight);
-                
-                // 상세사유 텍스트
-                ctx.fillStyle = '#000000';
-                ctx.font = `${fontSize}px Arial`;
-                const detailReason = document.getElementById('detailReason').value;
-                ctx.fillText(detailReason, reasonBoxX + (10 * scale), reasonBoxY + (20 * scale));
-                
-                y += reasonBoxHeight + (30 * scale);
-                
-                // 영수증 미첨부 사유
-                ctx.fillStyle = '#34495e';
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillText('영수증 미첨부 사유', leftMargin, y);
-                
-                y += 25 * scale;
-                
-                // 체크박스들
-                const checkboxes = [
-                    { id: 'reason1', text: '영수증 분실' },
-                    { id: 'reason2', text: '영수증 미발행' },
-                    { id: 'reason3', text: '경조사비' },
-                    { id: 'reason4', text: '교통비' },
-                    { id: 'reason5', text: '기타' }
-                ];
-                
-                let checkboxX = leftMargin;
-                let checkboxY = y;
-                
-                checkboxes.forEach((checkbox, index) => {
-                    const checked = document.getElementById(checkbox.id).checked;
-                    ctx.fillStyle = '#000000';
-                    ctx.font = `${fontSize}px Arial`;
-                    
-                    // 체크박스
-                    ctx.strokeStyle = '#bdc3c7';
-                    ctx.strokeRect(checkboxX, checkboxY - (12 * scale), 12 * scale, 12 * scale);
-                    
-                    if (checked) {
-                        ctx.fillStyle = '#3498db';
-                        ctx.fillRect(checkboxX + (2 * scale), checkboxY - (10 * scale), 8 * scale, 8 * scale);
-                    }
-                    
-                    // 텍스트
-                    ctx.fillStyle = '#000000';
-                    ctx.fillText(checkbox.text, checkboxX + (20 * scale), checkboxY);
-                    
-                    checkboxX += (ctx.measureText(checkbox.text).width + 40 * scale);
-                    
-                    // 3번째 후 줄바꿈
-                    if (index === 2) {
-                        checkboxX = leftMargin;
-                        checkboxY += 25 * scale;
-                    }
-                });
-                
-                y = checkboxY + (40 * scale);
-                
-                // 서명 영역
-                const signatureBoxWidth = (canvas.width - (containerPadding + 60 * scale)) / 2;
-                const signatureBoxHeight = 80 * scale;
-                
-                // 신청자 서명
-                ctx.strokeStyle = '#bdc3c7';
-                ctx.strokeRect(leftMargin, y, signatureBoxWidth, signatureBoxHeight);
-                
-                // 신청자 서명 이미지
-                const applicantCanvas = canvases.applicant;
-                if (applicantCanvas && applicantCanvas.style.display !== 'none') {
-                    ctx.drawImage(applicantCanvas, leftMargin + (5 * scale), y + (5 * scale), 
-                                signatureBoxWidth - (10 * scale), signatureBoxHeight - (10 * scale));
-                } else {
-                    ctx.fillStyle = '#bdc3c7';
-                    ctx.font = `${12 * scale}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('서명하려면 클릭', leftMargin + signatureBoxWidth/2, y + signatureBoxHeight/2);
-                }
-                
-                ctx.fillStyle = '#000000';
-                ctx.font = `bold ${12 * scale}px Arial`;
-                ctx.fillText('신청자', leftMargin + signatureBoxWidth/2, y + signatureBoxHeight + (15 * scale));
-                
-                // 부서장 서명
-                const secondBoxX = leftMargin + signatureBoxWidth + (20 * scale);
-                ctx.strokeRect(secondBoxX, y, signatureBoxWidth, signatureBoxHeight);
-                
-                // 부서장 서명 이미지
-                const managerCanvas = canvases.manager;
-                if (managerCanvas && managerCanvas.style.display !== 'none') {
-                    ctx.drawImage(managerCanvas, secondBoxX + (5 * scale), y + (5 * scale), 
-                                signatureBoxWidth - (10 * scale), signatureBoxHeight - (10 * scale));
-                } else {
-                    ctx.fillStyle = '#bdc3c7';
-                    ctx.font = `${12 * scale}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('서명하려면 클릭', secondBoxX + signatureBoxWidth/2, y + signatureBoxHeight/2);
-                }
-                
-                ctx.fillStyle = '#000000';
-                ctx.font = `bold ${12 * scale}px Arial`;
-                ctx.fillText('부서장 승인', secondBoxX + signatureBoxWidth/2, y + signatureBoxHeight + (15 * scale));
-                
-                // 다운로드
-                const link = document.createElement('a');
-                link.download = `영수증면제신청서_${new Date().toISOString().slice(0, 10).replace(/-/g, '')}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                alert('✅ 화면과 동일한 JPG 파일이 다운로드되었습니다! (10cm 폭)');
-            } catch (error) {
-                console.error('JPG 저장 오류:', error);
-                alert('❌ JPG 저장에 실패했습니다.');
-            }
-            
-            showButtons();
-        }
-
-        // PDF 다운로드
-        function downloadPDF() {
-            hideButtons();
-            setTimeout(() => {
-                window.print();
-                showButtons();
-                alert('💡 인쇄 대화상자에서 "PDF로 저장"을 선택하세요!');
-            }, 100);
-        }
-
-        // 인쇄
-        function printForm() {
-            hideButtons();
-            window.print();
-            setTimeout(showButtons, 1000);
-        }
-
-        // 페이지 로드시 초기화
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
+    // JPG 저장 기능
+    document.getElementById("saveJPG").addEventListener("click", () => {
+      html2canvas(document.querySelector("#receiptForm")).then(canvas => {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/jpeg");
+        link.download = `영수증면제신청서_${new Date().toISOString().slice(0,10)}.jpg`;
+        link.click();
+      });
+    });
+  </script>
 </body>
 </html>
