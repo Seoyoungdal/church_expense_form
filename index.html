@@ -730,115 +730,178 @@
             if (saveOptions) saveOptions.style.display = 'block';
         }
 
-        // JPG 다운로드 (10cm 폭 기준)
+        // JPG 다운로드 (화면과 동일한 레이아웃)
         function downloadJPG() {
             hideButtons();
             
             try {
+                // 실제 폼 컨테이너를 캔버스로 변환
+                const formContainer = document.getElementById('formContainer');
+                const rect = formContainer.getBoundingClientRect();
+                
+                // 10cm 폭 기준으로 스케일 계산 (378px = 10cm at 96DPI)
+                const targetWidth = 378;
+                const scale = targetWidth / rect.width;
+                const targetHeight = rect.height * scale;
+                
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 
-                // 10cm = 약 378px (96DPI 기준)
-                canvas.width = 378;
-                canvas.height = 500;
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
                 
-                // 흰색 배경
-                ctx.fillStyle = '#ffffff';
+                // 배경색
+                ctx.fillStyle = '#f8f9fa';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // 외곽 테두리 (진한 파란색)
-                ctx.strokeStyle = '#2c3e50';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
-                
-                // 제목 배경
-                ctx.fillStyle = '#2c3e50';
-                ctx.fillRect(5, 5, canvas.width - 10, 35);
-                
-                // 제목 (흰색 글자)
+                // 폼 컨테이너 배경
+                const containerPadding = 25 * scale;
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('영수증 면제 신청서', canvas.width/2, 28);
+                ctx.fillRect(containerPadding, containerPadding, canvas.width - (containerPadding * 2), canvas.height - (containerPadding * 2));
                 
-                // 구분선
-                ctx.strokeStyle = '#2c3e50';
-                ctx.lineWidth = 2;
+                // 그림자 효과
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 10 * scale;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 2 * scale;
+                ctx.fillRect(containerPadding, containerPadding, canvas.width - (containerPadding * 2), canvas.height - (containerPadding * 2));
+                ctx.shadowColor = 'transparent';
+                
+                // 헤더 영역
+                const headerY = containerPadding + (25 * scale);
+                ctx.fillStyle = '#2c3e50';
+                ctx.fillRect(containerPadding, headerY, canvas.width - (containerPadding * 2), 2 * scale);
+                
+                // 제목
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = `bold ${22 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText('영수증 면제 신청서', canvas.width / 2, headerY - (5 * scale));
+                
+                // 입력 필드들
+                let y = headerY + (30 * scale);
+                const leftMargin = containerPadding + (20 * scale);
+                const labelWidth = 100 * scale;
+                const fontSize = 14 * scale;
+                
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#34495e';
+                
+                // 신청일
+                ctx.fillText('신청일:', leftMargin, y);
+                ctx.fillStyle = '#3498db';
+                ctx.font = `${fontSize}px Arial`;
+                const applicationDate = document.getElementById('applicationDate').value;
+                if (applicationDate) {
+                    const formattedDate = new Date(applicationDate).toLocaleDateString('ko-KR');
+                    ctx.fillText(formattedDate, leftMargin + labelWidth, y);
+                }
+                
+                // 하단 선 그리기
+                ctx.strokeStyle = '#bdc3c7';
+                ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(15, 50);
-                ctx.lineTo(canvas.width - 15, 50);
+                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
+                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
                 ctx.stroke();
                 
-                // 내용 영역 배경
-                ctx.fillStyle = '#f8f9fa';
-                ctx.fillRect(15, 65, canvas.width - 30, 50);
-                ctx.fillRect(15, 130, canvas.width - 30, 120);
+                y += 35 * scale;
                 
-                // 내용
-                ctx.fillStyle = '#000000';
-                ctx.font = '11px Arial';
-                ctx.textAlign = 'left';
-                
-                const getData = (id) => {
-                    const el = document.getElementById(id);
-                    return el ? (el.value || '미입력') : '미입력';
-                };
-                
-                const getChecked = (id) => {
-                    const el = document.getElementById(id);
-                    return el ? el.checked : false;
-                };
-                
-                // 기본 정보
-                let y = 80;
-                ctx.font = 'bold 11px Arial';
+                // 지출일자
                 ctx.fillStyle = '#34495e';
-                ctx.fillText(`신청일: ${getData('applicationDate')}`, 25, y);
-                y += 18;
-                ctx.fillText(`지출일자: ${getData('expenseDate')}`, 25, y);
-                y += 18;
-                ctx.fillText(`지출금액: ${getData('amountInput')}원`, 25, y);
-                
-                y = 145;
-                ctx.fillText(`지출내용: ${getData('expenseContent')}`, 25, y);
-                y += 18;
-                
-                // 상세사유 (긴 텍스트 처리)
-                const detailReason = getData('detailReason');
-                ctx.fillText('상세사유:', 25, y);
-                y += 15;
-                ctx.font = '10px Arial';
-                ctx.fillStyle = '#000000';
-                
-                // 텍스트 줄바꿈 처리
-                const words = detailReason.split(' ');
-                let line = '';
-                const maxWidth = canvas.width - 60;
-                
-                for (let n = 0; n < words.length; n++) {
-                    const testLine = line + words[n] + ' ';
-                    const metrics = ctx.measureText(testLine);
-                    const testWidth = metrics.width;
-                    if (testWidth > maxWidth && n > 0) {
-                        ctx.fillText(line, 25, y);
-                        line = words[n] + ' ';
-                        y += 12;
-                    } else {
-                        line = testLine;
-                    }
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.fillText('지출일자:', leftMargin, y);
+                ctx.fillStyle = '#3498db';
+                ctx.font = `${fontSize}px Arial`;
+                const expenseDate = document.getElementById('expenseDate').value;
+                if (expenseDate) {
+                    const formattedExpenseDate = new Date(expenseDate).toLocaleDateString('ko-KR');
+                    ctx.fillText(formattedExpenseDate, leftMargin + labelWidth, y);
                 }
-                ctx.fillText(line, 25, y);
+                
+                // 하단 선
+                ctx.beginPath();
+                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
+                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
+                ctx.stroke();
+                
+                y += 35 * scale;
+                
+                // 지출금액
+                ctx.fillStyle = '#34495e';
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.fillText('지출금액:', leftMargin, y);
+                ctx.fillStyle = '#000000';
+                ctx.font = `${fontSize}px Arial`;
+                ctx.textAlign = 'right';
+                const amount = document.getElementById('amountInput').value;
+                ctx.fillText(amount, canvas.width - (containerPadding + 50 * scale), y);
+                ctx.textAlign = 'left';
+                ctx.fillText('원', canvas.width - (containerPadding + 40 * scale), y);
+                
+                // 하단 선
+                ctx.beginPath();
+                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
+                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
+                ctx.stroke();
+                
+                y += 35 * scale;
+                
+                // 지출내용
+                ctx.fillStyle = '#34495e';
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'left';
+                ctx.fillText('지출내용:', leftMargin, y);
+                ctx.fillStyle = '#000000';
+                ctx.font = `${fontSize}px Arial`;
+                const content = document.getElementById('expenseContent').value;
+                ctx.fillText(content, leftMargin + labelWidth, y);
+                
+                // 하단 선
+                ctx.beginPath();
+                ctx.moveTo(leftMargin + labelWidth, y + (5 * scale));
+                ctx.lineTo(canvas.width - (containerPadding + 20 * scale), y + (5 * scale));
+                ctx.stroke();
+                
+                y += 35 * scale;
+                
+                // 상세사유
+                ctx.fillStyle = '#34495e';
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.fillText('상세사유:', leftMargin, y);
+                
+                y += 20 * scale;
+                
+                // 상세사유 박스
+                const reasonBoxX = leftMargin;
+                const reasonBoxY = y;
+                const reasonBoxWidth = canvas.width - (containerPadding + 40 * scale);
+                const reasonBoxHeight = 60 * scale;
+                
+                ctx.strokeStyle = '#bdc3c7';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(reasonBoxX, reasonBoxY, reasonBoxWidth, reasonBoxHeight);
+                ctx.fillStyle = '#f8f9fa';
+                ctx.fillRect(reasonBoxX, reasonBoxY, reasonBoxWidth, reasonBoxHeight);
+                
+                // 상세사유 텍스트
+                ctx.fillStyle = '#000000';
+                ctx.font = `${fontSize}px Arial`;
+                const detailReason = document.getElementById('detailReason').value;
+                ctx.fillText(detailReason, reasonBoxX + (10 * scale), reasonBoxY + (20 * scale));
+                
+                y += reasonBoxHeight + (30 * scale);
                 
                 // 영수증 미첨부 사유
-                y += 25;
-                ctx.font = 'bold 12px Arial';
-                ctx.fillStyle = '#2c3e50';
-                ctx.fillText('영수증 미첨부 사유:', 25, y);
+                ctx.fillStyle = '#34495e';
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.fillText('영수증 미첨부 사유', leftMargin, y);
                 
-                y += 18;
-                ctx.font = '10px Arial';
-                ctx.fillStyle = '#000000';
-                const reasons = [
+                y += 25 * scale;
+                
+                // 체크박스들
+                const checkboxes = [
                     { id: 'reason1', text: '영수증 분실' },
                     { id: 'reason2', text: '영수증 미발행' },
                     { id: 'reason3', text: '경조사비' },
@@ -846,49 +909,81 @@
                     { id: 'reason5', text: '기타' }
                 ];
                 
-                let x = 25;
-                reasons.forEach((reason, index) => {
-                    const checked = getChecked(reason.id);
-                    const text = `${checked ? '☑' : '☐'} ${reason.text}`;
-                    ctx.fillText(text, x, y);
-                    x += ctx.measureText(text).width + 15;
-                    if (index === 2) { // 3번째 항목 후 줄바꿈
-                        y += 15;
-                        x = 25;
+                let checkboxX = leftMargin;
+                let checkboxY = y;
+                
+                checkboxes.forEach((checkbox, index) => {
+                    const checked = document.getElementById(checkbox.id).checked;
+                    ctx.fillStyle = '#000000';
+                    ctx.font = `${fontSize}px Arial`;
+                    
+                    // 체크박스
+                    ctx.strokeStyle = '#bdc3c7';
+                    ctx.strokeRect(checkboxX, checkboxY - (12 * scale), 12 * scale, 12 * scale);
+                    
+                    if (checked) {
+                        ctx.fillStyle = '#3498db';
+                        ctx.fillRect(checkboxX + (2 * scale), checkboxY - (10 * scale), 8 * scale, 8 * scale);
+                    }
+                    
+                    // 텍스트
+                    ctx.fillStyle = '#000000';
+                    ctx.fillText(checkbox.text, checkboxX + (20 * scale), checkboxY);
+                    
+                    checkboxX += (ctx.measureText(checkbox.text).width + 40 * scale);
+                    
+                    // 3번째 후 줄바꿈
+                    if (index === 2) {
+                        checkboxX = leftMargin;
+                        checkboxY += 25 * scale;
                     }
                 });
                 
+                y = checkboxY + (40 * scale);
+                
                 // 서명 영역
-                y += 30;
+                const signatureBoxWidth = (canvas.width - (containerPadding + 60 * scale)) / 2;
+                const signatureBoxHeight = 80 * scale;
+                
+                // 신청자 서명
                 ctx.strokeStyle = '#bdc3c7';
-                ctx.lineWidth = 1;
+                ctx.strokeRect(leftMargin, y, signatureBoxWidth, signatureBoxHeight);
                 
-                // 서명 박스들
-                const boxWidth = (canvas.width - 60) / 2 - 10;
-                const boxHeight = 50;
-                
-                // 신청자 서명 박스
-                ctx.strokeRect(25, y, boxWidth, boxHeight);
-                ctx.fillStyle = '#34495e';
-                ctx.font = 'bold 10px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('신청자', 25 + boxWidth/2, y + boxHeight + 15);
-                
-                // 부서장 서명 박스
-                const secondBoxX = 25 + boxWidth + 20;
-                ctx.strokeRect(secondBoxX, y, boxWidth, boxHeight);
-                ctx.fillText('부서장 승인', secondBoxX + boxWidth/2, y + boxHeight + 15);
-                
-                // 서명 이미지 추가 (만약 있다면)
+                // 신청자 서명 이미지
                 const applicantCanvas = canvases.applicant;
-                const managerCanvas = canvases.manager;
-                
                 if (applicantCanvas && applicantCanvas.style.display !== 'none') {
-                    ctx.drawImage(applicantCanvas, 27, y + 2, boxWidth - 4, boxHeight - 4);
+                    ctx.drawImage(applicantCanvas, leftMargin + (5 * scale), y + (5 * scale), 
+                                signatureBoxWidth - (10 * scale), signatureBoxHeight - (10 * scale));
+                } else {
+                    ctx.fillStyle = '#bdc3c7';
+                    ctx.font = `${12 * scale}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('서명하려면 클릭', leftMargin + signatureBoxWidth/2, y + signatureBoxHeight/2);
                 }
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = `bold ${12 * scale}px Arial`;
+                ctx.fillText('신청자', leftMargin + signatureBoxWidth/2, y + signatureBoxHeight + (15 * scale));
+                
+                // 부서장 서명
+                const secondBoxX = leftMargin + signatureBoxWidth + (20 * scale);
+                ctx.strokeRect(secondBoxX, y, signatureBoxWidth, signatureBoxHeight);
+                
+                // 부서장 서명 이미지
+                const managerCanvas = canvases.manager;
                 if (managerCanvas && managerCanvas.style.display !== 'none') {
-                    ctx.drawImage(managerCanvas, secondBoxX + 2, y + 2, boxWidth - 4, boxHeight - 4);
+                    ctx.drawImage(managerCanvas, secondBoxX + (5 * scale), y + (5 * scale), 
+                                signatureBoxWidth - (10 * scale), signatureBoxHeight - (10 * scale));
+                } else {
+                    ctx.fillStyle = '#bdc3c7';
+                    ctx.font = `${12 * scale}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('서명하려면 클릭', secondBoxX + signatureBoxWidth/2, y + signatureBoxHeight/2);
                 }
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = `bold ${12 * scale}px Arial`;
+                ctx.fillText('부서장 승인', secondBoxX + signatureBoxWidth/2, y + signatureBoxHeight + (15 * scale));
                 
                 // 다운로드
                 const link = document.createElement('a');
@@ -898,8 +993,9 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                alert('✅ JPG 파일이 다운로드되었습니다! (10cm 폭)');
+                alert('✅ 화면과 동일한 JPG 파일이 다운로드되었습니다! (10cm 폭)');
             } catch (error) {
+                console.error('JPG 저장 오류:', error);
                 alert('❌ JPG 저장에 실패했습니다.');
             }
             
