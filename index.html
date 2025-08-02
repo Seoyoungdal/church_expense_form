@@ -1,33 +1,112 @@
-<canvas id="signature-pad" width="300" height="150" style="touch-action: none; border:1px solid #ccc;"></canvas>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>서명 및 인쇄 페이지</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    #signature-pad {
+      border: 1px solid #ccc;
+      touch-action: none;
+    }
+    .btn-group {
+      margin-top: 15px;
+    }
+    .btn {
+      padding: 8px 16px;
+      margin-right: 10px;
+      border: none;
+      background-color: #0078d7;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .btn:hover {
+      background-color: #005ea6;
+    }
+    @media print {
+      .btn-group {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
 
-<script>
-const canvas = document.getElementById("signature-pad");
-const ctx = canvas.getContext("2d");
-let drawing = false;
+  <h2>서명을 작성하세요 ✍️</h2>
+  <canvas id="signature-pad" width="400" height="200"></canvas>
 
-canvas.addEventListener("touchstart", function(e) {
-  e.preventDefault();
-  drawing = true;
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  const x = touch.clientX - rect.left;
-  const y = touch.clientY - rect.top;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-});
+  <div class="btn-group">
+    <button class="btn" onclick="printPage()">인쇄하기 🖨️</button>
+    <button class="btn" onclick="saveAsImage()">JPG로 저장 🖼️</button>
+    <button class="btn" onclick="clearSignature()">서명 지우기 🔄</button>
+  </div>
 
-canvas.addEventListener("touchmove", function(e) {
-  if (!drawing) return;
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  const x = touch.clientX - rect.left;
-  const y = touch.clientY - rect.top;
-  ctx.lineTo(x, y);
-  ctx.stroke();
-});
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    const canvas = document.getElementById("signature-pad");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
 
-canvas.addEventListener("touchend", function(e) {
-  drawing = false;
-});
-</script>
+    const getPos = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const isTouch = e.touches ? true : false;
+      const point = isTouch ? e.touches[0] : e;
+      return {
+        x: point.clientX - rect.left,
+        y: point.clientY - rect.top
+      };
+    };
+
+    const startDraw = (e) => {
+      e.preventDefault();
+      drawing = true;
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    };
+
+    const draw = (e) => {
+      if (!drawing) return;
+      e.preventDefault();
+      const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    };
+
+    const endDraw = () => {
+      drawing = false;
+    };
+
+    canvas.addEventListener("mousedown", startDraw);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", endDraw);
+    canvas.addEventListener("touchstart", startDraw);
+    canvas.addEventListener("touchmove", draw);
+    canvas.addEventListener("touchend", endDraw);
+
+    function clearSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function printPage() {
+      window.print();
+    }
+
+    function saveAsImage() {
+      document.querySelector(".btn-group").style.display = "none";
+      html2canvas(canvas).then((canvasImage) => {
+        const link = document.createElement("a");
+        link.download = "signature.jpg";
+        link.href = canvasImage.toDataURL("image/jpeg");
+        link.click();
+        document.querySelector(".btn-group").style.display = "block";
+      });
+    }
+  </script>
+
+</body>
+</html>
