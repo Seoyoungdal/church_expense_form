@@ -1,33 +1,44 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>서명 캡처 v0.98</title>
+  <meta charset="UTF-8">
+  <title>서명 입력 v0.97 수정</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #signatureCanvas { border: 2px solid #000; touch-action: none; }
-    #buttonContainer { margin-top: 15px; }
-    button { margin-right: 10px; padding: 10px 15px; }
+    #container {
+      margin: 30px;
+    }
+    #signatureCanvas {
+      border: 2px solid #333;
+      display: block;
+      margin-bottom: 10px;
+      touch-action: none;
+    }
+    #actions {
+      margin-top: 10px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 10px 15px;
+    }
   </style>
 </head>
 <body>
-  <h2>서명 입력</h2>
-  <canvas id="signatureCanvas" width="300" height="150"></canvas>
-
-  <div id="buttonContainer">
-    <button id="saveJPG">JPG 저장</button>
-    <button onclick="window.print()">인쇄하기</button>
-    <button id="clearCanvas">초기화</button>
+  <div id="container">
+    <h2>서명 캡처 (v0.97 기준 개선)</h2>
+    <canvas id="signatureCanvas" width="320" height="160"></canvas>
+    <div id="actions">
+      <button id="saveJPG">JPG 저장</button>
+      <button onclick="window.print()">인쇄하기</button>
+      <button id="clear">초기화</button>
+    </div>
   </div>
 
   <script>
-    const canvas = document.getElementById('signatureCanvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById("signatureCanvas");
+    const ctx = canvas.getContext("2d");
     let drawing = false;
 
-    // 모바일 대응 좌표 계산
-    function getPointerPos(evt) {
+    function getPos(evt) {
       const rect = canvas.getBoundingClientRect();
       const clientX = evt.clientX || evt.touches[0].clientX;
       const clientY = evt.clientY || evt.touches[0].clientY;
@@ -37,40 +48,37 @@
       };
     }
 
-    canvas.addEventListener('pointerdown', e => {
+    canvas.addEventListener("pointerdown", e => {
       drawing = true;
-      const pos = getPointerPos(e);
+      const pos = getPos(e);
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
     });
 
-    canvas.addEventListener('pointermove', e => {
+    canvas.addEventListener("pointermove", e => {
       if (!drawing) return;
-      const pos = getPointerPos(e);
+      const pos = getPos(e);
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
     });
 
-    canvas.addEventListener('pointerup', () => drawing = false);
-    canvas.addEventListener('pointerleave', () => drawing = false);
+    canvas.addEventListener("pointerup", () => drawing = false);
+    canvas.addEventListener("pointerleave", () => drawing = false);
 
-    // 초기화
-    document.getElementById('clearCanvas').addEventListener('click', () => {
+    document.getElementById("clear").addEventListener("click", () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
 
-    // 버튼 제외하고 JPG 저장
-    document.getElementById('saveJPG').addEventListener('click', () => {
-      html2canvas(canvas).then(canvasImg => {
-        const link = document.createElement('a');
-        link.download = 'signature.jpg';
-        link.href = canvasImg.toDataURL('image/jpeg');
+    document.getElementById("saveJPG").addEventListener("click", () => {
+      html2canvas(canvas).then(c => {
+        const link = document.createElement("a");
+        link.download = "signature.jpg";
+        link.href = c.toDataURL("image/jpeg");
         link.click();
       });
     });
   </script>
 
-  <!-- html2canvas 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </body>
 </html>
