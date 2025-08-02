@@ -2,93 +2,75 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>영수증 면제 신청서</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>서명 캡처 v0.98</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input, textarea { width: 100%; padding: 8px; margin-top: 5px; }
-    canvas { border: 1px solid #ccc; margin-top: 10px; touch-action: none; }
-    .btn { margin: 10px 5px 0 0; padding: 8px 16px; background: #0078d7; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    .btn:hover { background: #005ea6; }
-    @media print { .btn { display: none; } }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #signatureCanvas { border: 2px solid #000; touch-action: none; }
+    #buttonContainer { margin-top: 15px; }
+    button { margin-right: 10px; padding: 10px 15px; }
   </style>
 </head>
 <body>
+  <h2>서명 입력</h2>
+  <canvas id="signatureCanvas" width="300" height="150"></canvas>
 
-  <h2>교회 영수증 면제 신청서 📝</h2>
+  <div id="buttonContainer">
+    <button id="saveJPG">JPG 저장</button>
+    <button onclick="window.print()">인쇄하기</button>
+    <button id="clearCanvas">초기화</button>
+  </div>
 
-  <form id="application-form">
-    <label>이름</label>
-    <input type="text" name="name" required />
-    <label>교회명</label>
-    <input type="text" name="church" required />
-    <label>연락처</label>
-    <input type="text" name="contact" />
-    <label>주소</label>
-    <textarea name="address"></textarea>
-    <label>신청 사유</label>
-    <textarea name="reason" rows="3" required></textarea>
-
-    <label>전자 서명 (아래에 그려주세요)</label>
-    <canvas id="signature-pad" width="400" height="150"></canvas>
-
-    <div>
-      <button type="button" class="btn" onclick="printPage()">인쇄하기</button>
-      <button type="button" class="btn" onclick="saveImage()">JPG로 저장</button>
-      <button type="button" class="btn" onclick="clearSignature()">서명 지우기</button>
-    </div>
-  </form>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    const canvas = document.getElementById("signature-pad");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
     let drawing = false;
 
-    const getPos = e => {
+    // 모바일 대응 좌표 계산
+    function getPointerPos(evt) {
       const rect = canvas.getBoundingClientRect();
-      const point = e.touches ? e.touches[0] : e;
-      return { x: point.clientX - rect.left, y: point.clientY - rect.top };
-    };
+      const clientX = evt.clientX || evt.touches[0].clientX;
+      const clientY = evt.clientY || evt.touches[0].clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
 
-    const startDraw = e => {
-      e.preventDefault(); drawing = true;
-      const pos = getPos(e);
-      ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
-    };
+    canvas.addEventListener('pointerdown', e => {
+      drawing = true;
+      const pos = getPointerPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    });
 
-    const draw = e => {
+    canvas.addEventListener('pointermove', e => {
       if (!drawing) return;
-      e.preventDefault(); const pos = getPos(e);
-      ctx.lineTo(pos.x, pos.y); ctx.stroke();
-    };
+      const pos = getPointerPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    });
 
-    const endDraw = () => { drawing = false; };
+    canvas.addEventListener('pointerup', () => drawing = false);
+    canvas.addEventListener('pointerleave', () => drawing = false);
 
-    canvas.addEventListener("mousedown", startDraw);
-    canvas.addEventListener("mousemove", draw);
-    canvas.addEventListener("mouseup", endDraw);
-    canvas.addEventListener("touchstart", startDraw);
-    canvas.addEventListener("touchmove", draw);
-    canvas.addEventListener("touchend", endDraw);
-
-    function clearSignature() {
+    // 초기화
+    document.getElementById('clearCanvas').addEventListener('click', () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    });
 
-    function printPage() {
-      window.print();
-    }
-
-    function saveImage() {
-      html2canvas(document.querySelector("#application-form")).then(canvasImg => {
-        const link = document.createElement("a");
-        link.download = "church_receipt_exemption.jpg";
-        link.href = canvasImg.toDataURL("image/jpeg");
+    // 버튼 제외하고 JPG 저장
+    document.getElementById('saveJPG').addEventListener('click', () => {
+      html2canvas(canvas).then(canvasImg => {
+        const link = document.createElement('a');
+        link.download = 'signature.jpg';
+        link.href = canvasImg.toDataURL('image/jpeg');
         link.click();
       });
-    }
+    });
   </script>
 
+  <!-- html2canvas 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </body>
 </html>
