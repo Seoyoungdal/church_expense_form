@@ -1,214 +1,33 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>영수증 면제 신청서 v0.97</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0"/>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <style>
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      margin: auto;
-      padding: 20px;
-      max-width: 100mm;
-      box-sizing: border-box;
-      background: #fff;
-      color: #000;
-    }
+<canvas id="signature-pad" width="300" height="150" style="touch-action: none; border:1px solid #ccc;"></canvas>
 
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
+<script>
+const canvas = document.getElementById("signature-pad");
+const ctx = canvas.getContext("2d");
+let drawing = false;
 
-    label {
-      font-weight: bold;
-      margin-top: 12px;
-      display: block;
-      font-size: 14px;
-    }
+canvas.addEventListener("touchstart", function(e) {
+  e.preventDefault();
+  drawing = true;
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+});
 
-    input, textarea {
-      width: 100%;
-      font-size: 14px;
-      padding: 6px;
-      margin-top: 4px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+canvas.addEventListener("touchmove", function(e) {
+  if (!drawing) return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+  ctx.lineTo(x, y);
+  ctx.stroke();
+});
 
-    textarea {
-      height: 60px;
-      resize: none;
-    }
-
-    .checkbox-group {
-      margin-top: 10px;
-    }
-
-    .checkbox-group label {
-      display: block;
-      font-weight: normal;
-    }
-
-    .signature-section {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-      gap: 12px;
-    }
-
-    .signature-box {
-      flex: 1;
-    }
-
-    canvas {
-      border: 1px solid #ccc;
-      width: 100%;
-      height: 100px;
-      margin-top: 4px;
-      touch-action: none;
-    }
-
-    #buttons {
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    #buttons button {
-      margin: 6px;
-      padding: 6px 12px;
-      font-size: 14px;
-    }
-
-    #note {
-      font-size: 12px;
-      color: #666;
-      margin-top: 30px;
-    }
-
-    @media print {
-      #buttons {
-        display: none !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="form-container">
-    <h1>영수증 면제 신청서</h1>
-
-    <label>신청일</label>
-    <input type="date" />
-
-    <label>지출일자</label>
-    <input type="date" />
-
-    <label>지출금액</label>
-    <input type="number" inputmode="numeric" placeholder="예: 50000" />
-
-    <label>지출내용</label>
-    <input type="text" placeholder="예: 교통비, 사무용품 등" />
-
-    <label>상세사유</label>
-    <textarea placeholder="지출의 구체적인 사유를 입력해주세요."></textarea>
-
-    <label>영수증 미첨부 사유</label>
-    <div class="checkbox-group">
-      <label><input type="checkbox" /> 영수증 분실</label>
-      <label><input type="checkbox" /> 영수증 미발행</label>
-      <label><input type="checkbox" /> 경조사비</label>
-      <label><input type="checkbox" /> 교통비</label>
-      <label><input type="checkbox" /> 기타</label>
-    </div>
-
-    <div class="signature-section">
-      <div class="signature-box">
-        <label>신청자 성명</label>
-        <input type="text" placeholder="예: 홍길동" />
-        <canvas id="signApp"></canvas>
-      </div>
-      <div class="signature-box">
-        <label>부서장 성명</label>
-        <input type="text" placeholder="예: 이부장" />
-        <canvas id="signDept"></canvas>
-      </div>
-    </div>
-
-    <div id="note">
-      ※ 본 신청서는 사실에 근거하여 작성하며, 가능한 관련 증빙자료도 첨부해 주시기 바랍니다.
-    </div>
-  </div>
-
-  <div id="buttons">
-    <button onclick="saveJPG()">JPG 저장</button>
-    <button onclick="window.print()">인쇄하기</button>
-  </div>
-
-  <script>
-    // 서명 캔버스
-    function setupSignature(canvasId) {
-      const canvas = document.getElementById(canvasId);
-      const ctx = canvas.getContext("2d");
-      let drawing = false;
-
-      const getPos = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        if (e.touches) {
-          return {
-            x: e.touches[0].clientX - rect.left,
-            y: e.touches[0].clientY - rect.top
-          };
-        } else {
-          return {
-            x: e.offsetX,
-            y: e.offsetY
-          };
-        }
-      };
-
-      const draw = (e) => {
-        if (!drawing) return;
-        const pos = getPos(e);
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "#000";
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-      };
-
-      canvas.addEventListener("mousedown", () => drawing = true);
-      canvas.addEventListener("mouseup", () => { drawing = false; ctx.beginPath(); });
-      canvas.addEventListener("mousemove", draw);
-
-      canvas.addEventListener("touchstart", () => drawing = true);
-      canvas.addEventListener("touchend", () => { drawing = false; ctx.beginPath(); });
-      canvas.addEventListener("touchmove", draw);
-    }
-
-    setupSignature("signApp");
-    setupSignature("signDept");
-
-    // JPG 저장
-    function saveJPG() {
-      const btns = document.getElementById("buttons");
-      btns.style.display = "none"; // 숨기기
-
-      html2canvas(document.getElementById("form-container")).then(canvas => {
-        const link = document.createElement("a");
-        link.download = "영수증_면제_신청서.jpg";
-        link.href = canvas.toDataURL("image/jpeg");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        btns.style.display = "block"; // 다시 보여주기
-      });
-    }
-  </script>
-</body>
-</html>
+canvas.addEventListener("touchend", function(e) {
+  drawing = false;
+});
+</script>
